@@ -123,8 +123,10 @@ RetroArch**, or your exit hotkey).
 
 ## Speed
 
-On a Retroid Pocket Nova a running game uses about half of one CPU core, so it keeps full speed
-with room to spare. On a PC the core runs 6-7 times faster than real time on one core.
+Measured on a Retroid Pocket Nova (CHGame Player's speed line, at 60 frames a second, which is
+full speed): STARLIFT takes about 2.5 ms a frame, CHix 2.1 ms and Another World 1.4 ms, out of the
+16.7 ms a frame has. The sound on the Nova has been listened to and is good. *Options → Speed
+overlay* shows the figures in a game. On a PC the core runs 6-7 times faster than real time on one core.
 
 ## Credits
 
