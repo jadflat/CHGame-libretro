@@ -304,15 +304,23 @@ int main(int argc, char **argv)
         if (state_at >= 0 && f == (int)(state_at * 60)) {
             const size_t n = retro_serialize_size();
             void *st = malloc(n);
-            static uint32_t after[128 * 128];
+            uint32_t h1 = 2166136261u, h2 = 2166136261u;
             const bool ok = retro_serialize(st, n);
-            retro_run();
-            memcpy(after, frame, sizeof frame);
-            for (int k = 0; k < 60; k++) retro_run();
+            /* run 60 frames, load the state, run 60 again: the same pictures */
+            for (int k = 0; k < 60; k++) {
+                retro_run();
+                for (int j = 0; j < 128 * 128; j++) h1 = (h1 ^ frame[j]) * 16777619u;
+            }
             const bool back = retro_unserialize(st, n);
-            retro_run();
-            printf("state: %zu bytes, save %d load %d, frame after load %s\n", n, ok, back,
-                   memcmp(after, frame, sizeof frame) ? "DIFFERS" : "matches");
+            void *st2 = malloc(n);
+            const bool rt = retro_serialize(st2, n) && !memcmp(st, st2, n);   /* load then save gives the same bytes */
+            for (int k = 0; k < 60; k++) {
+                retro_run();
+                for (int j = 0; j < 128 * 128; j++) h2 = (h2 ^ frame[j]) * 16777619u;
+            }
+            printf("state: %zu bytes, save %d load %d, round trip %s, 60 frames %08x then %08x: %s\n", n, ok, back,
+                   rt ? "same bytes" : "DIFFERENT BYTES", h1, h2, h1 == h2 ? "matches" : "DIFFERS");
+            free(st2);
             free(st);
             state_at = -1;
         }

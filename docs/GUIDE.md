@@ -53,7 +53,7 @@ it a folder you can write to:
    name exactly as it is.
 2. In RetroArch: **Main Menu → Load Core → Install or Restore a Core**, then pick
    `chgame_libretro_android.so`. RetroArch copies it into its own cores folder.
-3. **Load Core** now lists **CHGame (CHGame Emulator)**.
+3. **Load Core** now lists **CHGame (CHGame Retro)**.
 
 ### 4. The SD card folder
 Copy the `.DAT` files into:
