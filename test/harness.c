@@ -191,10 +191,21 @@ int main(int argc, char **argv)
     Press presses[64];
     int npress = 0;
     double state_at = -1;
+    const char *state_out = NULL, *state_in = NULL;   /* --state-out file@sec, --state-in file: a state across instances */
+    double state_out_at = -1, tbase = 0;              /* --tbase: the game clock the presses use starts here */
+    int hash_from = -1, hash_count = 0;               /* --hash from:count: a hash of each frame */
     for (int i = 5; i < argc; i++) {
         if (!strcmp(argv[i], "--sys") && i + 1 < argc) sys_dir = argv[++i];
         else if (!strcmp(argv[i], "--save") && i + 1 < argc) save_dir = argv[++i];
         else if (!strcmp(argv[i], "--state") && i + 1 < argc) state_at = atof(argv[++i]);
+        else if (!strcmp(argv[i], "--state-out") && i + 1 < argc) {
+            state_out = argv[++i];
+            char *at = strrchr(argv[i], '@');
+            if (at) { *at = 0; state_out_at = atof(at + 1); }
+        }
+        else if (!strcmp(argv[i], "--state-in") && i + 1 < argc) state_in = argv[++i];
+        else if (!strcmp(argv[i], "--tbase") && i + 1 < argc) tbase = atof(argv[++i]);
+        else if (!strcmp(argv[i], "--hash") && i + 1 < argc) sscanf(argv[++i], "%d:%d", &hash_from, &hash_count);
         else if (!strcmp(argv[i], "--opt") && i + 1 < argc && nopt < 8) {
             /* --opt chgame_scale=3x */
             const char *eq = strchr(argv[++i], '=');
@@ -250,14 +261,42 @@ int main(int argc, char **argv)
 
     const int frames = (int)(seconds * 60);
     double run_time = 0;
+    if (state_in) {
+        const size_t n = retro_serialize_size();
+        void *st = malloc(n);
+        FILE *sf = fopen(state_in, "rb");
+        size_t got = sf ? fread(st, 1, n, sf) : 0;
+        if (!got || !retro_unserialize(st, got)) { fprintf(stderr, "state-in failed\n"); return 1; }
+        fclose(sf);
+        free(st);
+    }
     for (int f = 0; f < frames; f++) {
-        const double t = f / 60.0;
+        const double t = tbase + f / 60.0;
         held = 0;
         for (int i = 0; i < npress; i++)
             if (t >= presses[i].at && t < presses[i].at + presses[i].dur) held |= (uint16_t)(1u << presses[i].id);
         const double t0 = now_s();
         retro_run();
         run_time += now_s() - t0;
+        if (hash_from >= 0) {
+            const int af = (int)(tbase * 60 + 0.5) + f;
+            if (af >= hash_from && af < hash_from + hash_count) {
+                uint32_t h = 2166136261u;
+                for (int k = 0; k < 128 * 128; k++) h = (h ^ frame[k]) * 16777619u;
+                printf("HASH %d %08x\n", af, h);
+                char hp[1024];
+                snprintf(hp, sizeof hp, "%s/h_%05d.ppm", outdir, af);
+                write_ppm(hp);
+            }
+        }
+        if (state_out && f + 1 == (int)(state_out_at * 60 - tbase * 60 + 0.5)) {
+            const size_t n = retro_serialize_size();
+            void *st = malloc(n);
+            FILE *sf = fopen(state_out, "wb");
+            if (sf && retro_serialize(st, n)) fwrite(st, 1, n, sf);
+            if (sf) fclose(sf);
+            free(st);
+        }
         if ((f + 1) % 60 == 0) {
             snprintf(path, sizeof path, "%s/frame_%03d.ppm", outdir, (f + 1) / 60);
             write_ppm(path);
