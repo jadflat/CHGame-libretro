@@ -1,0 +1,12 @@
+# Shared by Makefile and jni/Android.mk (paths relative to this file's folder)
+LIBRETRO_DIR := $(CORE_DIR)/libretro
+EMU_DIR      := $(CORE_DIR)/emu/src
+
+INCFLAGS := -I$(EMU_DIR) -I$(LIBRETRO_DIR)
+
+SOURCES_C := $(LIBRETRO_DIR)/libretro.c \
+             $(EMU_DIR)/rv32.c $(EMU_DIR)/bus.c $(EMU_DIR)/machine.c $(EMU_DIR)/st7735.c \
+             $(EMU_DIR)/audio.c $(EMU_DIR)/piezo_filter.c $(EMU_DIR)/loader.c \
+             $(EMU_DIR)/sdspi.c $(EMU_DIR)/sdcard.c $(EMU_DIR)/bootloader_image.c
+
+COREDEFINES := -DSDCARD_LABEL=\"CHGAME\"

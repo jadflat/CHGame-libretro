@@ -1,27 +1,88 @@
-# CHGame libretro core. Builds with zig (zig cc) on Windows; make, or run
-# the commands by hand:
-#
-#   make            build/chgame_libretro.dll       (Windows x86_64)
-#   make android    build/chgame_libretro_android.so (Android arm64)
-#   make harness    build/harness.exe               (test front end)
+# CHGame libretro core: standard libretro Makefile (make platform=<p>).
+# The zig build (./build.sh) is separate and unchanged.
+STATIC_LINKING := 0
+TARGET_NAME    := chgame
+DEBUG          ?= 0
+CORE_DIR       := .
 
-ZIG     ?= zig
-CFLAGS  := -std=c11 -O3 -Wall -Wno-unused-parameter -Iemu/src -Ilibretro -DSDCARD_LABEL=\"CHGAME\"
-EMU_SRC := emu/src/rv32.c emu/src/bus.c emu/src/machine.c emu/src/st7735.c emu/src/audio.c \
-           emu/src/piezo_filter.c emu/src/loader.c emu/src/sdspi.c emu/src/sdcard.c \
-           emu/src/bootloader_image.c
-SRC     := libretro/libretro.c $(EMU_SRC)
+ifeq ($(platform),)
+platform = unix
+ifeq ($(shell uname -s),)
+   platform = win
+else ifneq ($(findstring Darwin,$(shell uname -s)),)
+   platform = osx
+else ifneq ($(findstring MINGW,$(shell uname -s)),)
+   platform = win
+else ifneq ($(findstring MSYS,$(shell uname -s)),)
+   platform = win
+endif
+endif
 
-all: build/chgame_libretro.dll
+CC ?= gcc
+fpic :=
 
-build/chgame_libretro.dll: $(SRC)
-	@mkdir -p build
-	$(ZIG) cc -target x86_64-windows-gnu -shared $(CFLAGS) -o $@ $(SRC)
+ifneq (,$(findstring unix,$(platform)))
+   TARGET := $(TARGET_NAME)_libretro.so
+   fpic := -fPIC
+   SHARED := -shared -Wl,--no-undefined -Wl,--version-script=$(CORE_DIR)/libretro/link.T
+   LDFLAGS += -lm
+else ifneq (,$(findstring linux,$(platform)))
+   TARGET := $(TARGET_NAME)_libretro.so
+   fpic := -fPIC
+   SHARED := -shared -Wl,--no-undefined -Wl,--version-script=$(CORE_DIR)/libretro/link.T
+   LDFLAGS += -lm
+else ifneq (,$(findstring osx,$(platform)))
+   TARGET := $(TARGET_NAME)_libretro.dylib
+   fpic := -fPIC
+   SHARED := -dynamiclib
+   ifeq ($(CROSS_COMPILE),1)
+      TARGET_RULE   = -target $(LIBRETRO_APPLE_PLATFORM) -isysroot $(LIBRETRO_APPLE_ISYSROOT)
+      CFLAGS       += $(TARGET_RULE)
+      LDFLAGS      += $(TARGET_RULE)
+   endif
+else ifneq (,$(findstring win,$(platform)))
+   TARGET := $(TARGET_NAME)_libretro.dll
+   CC = gcc
+   SHARED := -shared -static-libgcc -static -s
+   LDFLAGS += -lm
+else ifneq (,$(findstring emscripten,$(platform)))
+   TARGET := $(TARGET_NAME)_libretro_emscripten.bc
+   CC = emcc
+   STATIC_LINKING = 1
+else
+   # other platforms: generic shared object
+   TARGET := $(TARGET_NAME)_libretro.so
+   fpic := -fPIC
+   SHARED := -shared
+   LDFLAGS += -lm
+endif
 
-build/harness.exe: test/harness.c
-	@mkdir -p build
-	$(ZIG) cc -target x86_64-windows-gnu -O2 -Ilibretro -o $@ test/harness.c
+include Makefile.common
 
-harness: build/harness.exe
+OBJECTS := $(SOURCES_C:.c=.o)
 
-.PHONY: all harness android
+ifeq ($(DEBUG),1)
+   CFLAGS += -O0 -g
+else
+   CFLAGS += -O3
+endif
+
+CFLAGS += -std=gnu99 -Wall -Wno-unused-parameter $(fpic) $(INCFLAGS) $(COREDEFINES)
+
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+ifeq ($(STATIC_LINKING), 1)
+	$(AR) rcs $@ $(OBJECTS)
+else
+	$(CC) $(fpic) $(SHARED) -o $@ $(OBJECTS) $(LDFLAGS)
+endif
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+clean:
+	rm -f $(OBJECTS) $(TARGET_NAME)_libretro.so $(TARGET_NAME)_libretro.dylib \
+	      $(TARGET_NAME)_libretro.dll $(TARGET_NAME)_libretro_emscripten.bc
+
+.PHONY: all clean

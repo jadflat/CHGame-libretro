@@ -1,0 +1,64 @@
+# DESCRIPTION: GitLab CI/CD for libretro (NOT FOR GitLab-proper)
+# Job names and template includes follow libretro/gw-libretro.
+
+.core-defs:
+  variables:
+    CORENAME: chgame
+    JNI_PATH: jni
+
+include:
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/windows-x64-mingw.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/linux-x64.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/osx-x64.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/osx-arm64.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/android-jni.yml'
+
+stages:
+  - build-prepare
+  - build-shared
+  - build-static
+
+libretro-build-windows-x64:
+  extends:
+    - .libretro-windows-x64-mingw-make-default
+    - .core-defs
+
+libretro-build-linux-x64:
+  extends:
+    - .libretro-linux-x64-make-default
+    - .core-defs
+
+libretro-build-osx-x64:
+  extends:
+    - .libretro-osx-x64-make-10-7
+    - .core-defs
+
+libretro-build-osx-arm64:
+  extends:
+    - .libretro-osx-arm64-make-default
+    - .core-defs
+
+android-armeabi-v7a:
+  extends:
+    - .libretro-android-jni-armeabi-v7a
+    - .core-defs
+
+android-arm64-v8a:
+  extends:
+    - .libretro-android-jni-arm64-v8a
+    - .core-defs
+
+android-x86_64:
+  extends:
+    - .libretro-android-jni-x86_64
+    - .core-defs
+
+android-x86:
+  extends:
+    - .libretro-android-jni-x86
+    - .core-defs

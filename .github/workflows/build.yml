@@ -1,0 +1,35 @@
+name: build
+on: [push, pull_request]
+jobs:
+  make:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest,  platform: unix, out: chgame_libretro.so }
+          - { os: macos-latest,   platform: osx,  out: chgame_libretro.dylib }
+          - { os: windows-latest, platform: win,  out: chgame_libretro.dll }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: make (MinGW on Windows)
+        if: runner.os == 'Windows'
+        run: mingw32-make platform=win -j4
+      - name: make
+        if: runner.os != 'Windows'
+        run: make platform=${{ matrix.platform }} -j4
+      - run: test -f ${{ matrix.out }}
+      - uses: actions/upload-artifact@v4
+        with: { name: "${{ matrix.platform }}", path: "${{ matrix.out }}" }
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ndk-build
+        run: $ANDROID_NDK_HOME/ndk-build -C jni -j4
+      - run: ls -l libs/*/*.so
+      - uses: actions/upload-artifact@v4
+        with: { name: android, path: libs }
