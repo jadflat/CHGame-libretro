@@ -30,7 +30,7 @@
 #include "audio.h"
 #include "sdcard.h"
 
-#define CORE_VERSION    "0.4.1"
+#define CORE_VERSION    "0.5"
 #define AUDIO_RATE      48000
 #define FPS             60
 #define FRAME_CYCLES    (CHG_HCLK / FPS)
@@ -102,7 +102,11 @@ static float      sound_x(float x)
     return x;
 }
 static bool       lcd_colour;       /* colour "LCD" */
+static bool       fps_osd;          /* the frame counter overlay */
 static bool       dat_all;          /* every .DAT in the game's folder goes on the card */
+static int        fps_value = -1;   /* the frames a second shown */
+static int        fps_frames;
+static uint32_t   fps_starts;
 static uint64_t   last_sync;        /* m.cycles when the SD card was last written back */
 
 static void core_log(enum retro_log_level level, const char *fmt, ...)
@@ -133,6 +137,7 @@ static const struct retro_variable vars[] = {
     { "chgame_jit",    "JIT recompiler (aarch64; same result as the interpreter, faster); On|Off" },
 #endif
     { "chgame_colour", "Colour; Raw|LCD" },
+    { "chgame_fps",    "FPS counter (game frames a second, top right); Off|On" },
     { "chgame_scale",  "Internal upscale (nearest); 1x|2x|3x|4x|5x|6x" },
     { NULL, NULL },
 };
@@ -166,6 +171,7 @@ static void apply_options(void)
 #ifdef CHG_JIT
     chg_jit = strcmp(opt("chgame_jit"), "Off") != 0;
 #endif
+    fps_osd = !strcmp(opt("chgame_fps"), "On");
     lcd_colour = !strcmp(opt("chgame_colour"), "LCD");
     dat_all = opt("chgame_dat_all")[0] == 'A';
     struct retro_variable v;
@@ -551,6 +557,7 @@ RETRO_API bool retro_load_game(const struct retro_game_info *game)
     apply_options();
     last_sync = m.cycles;
     loaded = true;
+    fps_value = -1;
     if (m.sd && folder_card) check_dat_files(game->path, sd_path);
 
     /* the machine's RAM for cheats and achievements: 20 KB at 0x20000000 */
@@ -624,10 +631,10 @@ static uint8_t read_buttons(void)
         { RETRO_DEVICE_ID_JOYPAD_DOWN,   CHG_BTN_DOWN },
         { RETRO_DEVICE_ID_JOYPAD_LEFT,   CHG_BTN_LEFT },
         { RETRO_DEVICE_ID_JOYPAD_RIGHT,  CHG_BTN_RIGHT },
-        { RETRO_DEVICE_ID_JOYPAD_A,      CHG_BTN_A },          /* east, as the emulator's gamepad A */
-        { RETRO_DEVICE_ID_JOYPAD_B,      CHG_BTN_B },          /* south */
-        { RETRO_DEVICE_ID_JOYPAD_SELECT, CHG_BTN_SELECT },
-        { RETRO_DEVICE_ID_JOYPAD_START,  CHG_BTN_START },
+        { RETRO_DEVICE_ID_JOYPAD_A,      CHG_BTN_B },          /* east: CHGame has A on the left, B on the right */
+        { RETRO_DEVICE_ID_JOYPAD_B,      CHG_BTN_A },          /* south */
+        { RETRO_DEVICE_ID_JOYPAD_SELECT, CHG_BTN_START },        /* CHGame has Start on the left */
+        { RETRO_DEVICE_ID_JOYPAD_START,  CHG_BTN_SELECT },
     };
     uint8_t b = 0;
     if (use_mask) {
@@ -660,6 +667,30 @@ static void tint_lcd(uint32_t *px)
     }
 }
 
+/* The FPS counter: new frames the game put on the LCD (RAMWR window restarts)
+   per second of emulated time, refreshed once a second. */
+static void draw_fps(uint32_t *px)
+{
+    static const uint16_t font[10] = {      /* 3x5 digits; 15 bits, row major */
+        0x7B6F, 0x2C97, 0x73E7, 0x73CF, 0x5BC9, 0x79CF, 0x79EF, 0x7249, 0x7BEF, 0x7BCF };
+    if (fps_frames++ % FPS == 0 || fps_value < 0) {
+        if (fps_value >= 0) fps_value = (int)(m.lcd.frame_starts - fps_starts);
+        else fps_value = 0;
+        fps_starts = m.lcd.frame_starts;
+    }
+    char t[8];
+    const int len = snprintf(t, sizeof t, "%d", fps_value);
+    const int x0 = 128 - (len * 4 + 1) - 1;
+    for (int y = 0; y < 7; y++)
+        for (int x = 0; x < len * 4 + 1; x++) px[(1 + y) * 128 + x0 + x] = 0;
+    for (int k = 0; k < len; k++) {
+        const uint16_t g = font[t[k] - '0'];
+        for (int y = 0; y < 5; y++)
+            for (int x = 0; x < 3; x++)
+                if (g >> (14 - (y * 3 + x)) & 1) px[(2 + y) * 128 + x0 + 1 + k * 4 + x] = 0xFFFFFF;
+    }
+}
+
 RETRO_API void retro_run(void)
 {
     bool updated = false;
@@ -681,6 +712,7 @@ RETRO_API void retro_run(void)
 
     st7735_render(&m.lcd, pixels);
     if (lcd_colour) tint_lcd(pixels);
+    if (fps_osd) draw_fps(pixels);
     if (scale == 1) {
         video_cb(pixels, 128, 128, 128 * sizeof(uint32_t));
     } else {

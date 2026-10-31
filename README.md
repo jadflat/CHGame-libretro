@@ -14,7 +14,7 @@ screen, the buzzer, the microSD card and the real bootloader.
 | Saves | the flash pages a game writes, as `<game>.sav` in RetroArch's save folder |
 | Save states | yes |
 | SD card | the folder `<system>/chgame/sdcard/`: put `.DAT` files there |
-| Buttons | d-pad or left stick, A (right face button), B (bottom), Start, Select |
+| Buttons | d-pad or left stick, CHGame A = the bottom face button, B = the right one, Start = Select, Select = Start (CHGame has A and Start on the left) |
 
 **Download:** `chgame_libretro_android.so`, `chgame_libretro.dll` and `chgame_libretro.info`
 are on the [releases page](../../releases). Installing them (RetroArch on Android and Windows,

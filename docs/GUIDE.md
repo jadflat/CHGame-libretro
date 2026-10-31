@@ -67,9 +67,10 @@ pick CHGame when RetroArch asks which core to use.
 | CHGame button | RetroPad (RetroArch's controller) |
 |---|---|
 | D-pad | d-pad or left stick |
-| A | A, the **right** face button |
-| B | B, the **bottom** face button |
-| START / SELECT | Start / Select |
+| A (left) | B, the **bottom** face button |
+| B (right) | A, the **right** face button |
+| START (left) | Select |
+| SELECT | Start |
 
 To change it: **Quick Menu → Controls → Port 1 Controls**.
 
