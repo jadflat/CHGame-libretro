@@ -115,6 +115,11 @@ The command starts RetroArch with the installed core,
 RetroArch first. Quit through RetroArch's menu (**Quick Menu -> Close Content**, then **Quit
 RetroArch**, or your exit hotkey).
 
+## Linux handhelds (ROCKNIX)
+
+`chgame_libretro.so` is the aarch64 Linux build (with a JIT for speed). Installing it and
+setting up EmulationStation on a ROCKNIX handheld: [ROCKNIX.md](ROCKNIX.md).
+
 ---
 
 ## Speed
