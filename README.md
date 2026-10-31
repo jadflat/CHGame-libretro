@@ -20,8 +20,6 @@ screen, the buzzer, the microSD card and the real bootloader.
 are on the [releases page](../../releases). Installing them (RetroArch on Android and Windows,
 ES-DE, Daijisho): [docs/GUIDE.md](docs/GUIDE.md).
 
-The same emulator as an Android app with its own game list: [CHGamePlayer](https://github.com/jadflat/CHGamePlayer).
-
 ## Building
 
 On Windows with `zig` on the PATH (no make needed; `Makefile` holds the same Windows recipe):

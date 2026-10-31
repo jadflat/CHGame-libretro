@@ -1,5 +1,5 @@
 #!/bin/sh
-# Builds the core with zig cc (no make needed). ./build.sh [windows|harness|android|all]
+# Builds the core with zig cc (no make needed). ./build.sh [windows|harness|android|linux-arm64|bench-arm64|bench-sim|all]
 set -e
 cd "$(dirname "$0")"
 ZIG=${ZIG:-zig}
@@ -38,4 +38,23 @@ if [ "$what" = android ] || [ "$what" = all ]; then
         -Wl,-soname,chgame_libretro_android.so -Wl,--hash-style=both -Wl,-z,max-page-size=16384 \
         -Wl,-z,now -Wl,-z,relro -Wl,-z,noexecstack -Wl,--gc-sections -Wl,--build-id=sha1
     echo "build/chgame_libretro_android.so"
+fi
+if [ "$what" = linux-arm64 ] || [ "$what" = all ]; then
+    # ROCKNIX and other aarch64 Linux handhelds; old glibc so any distro loads it
+    # with the aarch64 JIT (emu/src/jit_a64.c); the interpreter is the fallback and chgame_jit=Off
+    eval $ZIG cc -target aarch64-linux-gnu.2.17 -mcpu=cortex_a53 -shared -fPIC -s -fvisibility=hidden -D_GNU_SOURCE \
+        -DCHG_JIT $CFLAGS -o build/chgame_libretro.so $SRC emu/src/jit_a64.c -lm
+    echo "build/chgame_libretro.so"
+fi
+if [ "$what" = bench-arm64 ] || [ "$what" = all ]; then
+    # the bench: each game with the interpreter and with the JIT, compared (run it with build/chgame-bench.sh)
+    eval $ZIG cc -target aarch64-linux-gnu.2.17 -mcpu=cortex_a53 -s -D_GNU_SOURCE -DCHG_JIT \
+        $CFLAGS -o build/chgame-bench-arm64 test/bench.c $SRC emu/src/jit_a64.c -lm
+    echo "build/chgame-bench-arm64"
+fi
+if [ "$what" = bench-sim ]; then
+    # the same JIT, its code run by the checker in jit_sim.c on this PC: slow, but it proves the generated code
+    eval $ZIG cc -target x86_64-windows-gnu -O2 -DCHG_JIT -DCHG_JIT_SIM \
+        $CFLAGS -o build/chgame-bench-sim.exe test/bench.c $SRC emu/src/jit_a64.c emu/src/jit_sim.c
+    echo "build/chgame-bench-sim.exe"
 fi

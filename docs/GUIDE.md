@@ -5,10 +5,6 @@ Windows. It is a thin libretro front end around joyrider3774's CHGame Emulator, 
 whole board at the cycle level, so games play as they do on the real handheld. This guide covers
 installing it in RetroArch on Android and on Windows, and starting it from ES-DE.
 
-The same emulator as an Android app with its own game list, save states and ES-DE media maker:
-[CHGamePlayer](https://github.com/jadflat/CHGamePlayer). The core's saves and the app's are kept apart, but a game's own save
-(`<game>.sav`) is the same format in both.
-
 Release files: `chgame_libretro_android.so` (Android), `chgame_libretro.dll` (Windows),
 `chgame_libretro.info` (the core's name and details in RetroArch) and `frontends/es_systems.xml`
 (ES-DE).
