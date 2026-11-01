@@ -20,6 +20,23 @@ screen, the buzzer, the microSD card and the real bootloader.
 are on the [releases page](../../releases). Installing them (RetroArch on Android and Windows,
 ES-DE, Daijisho): [docs/GUIDE.md](docs/GUIDE.md).
 
+## JIT recompiler (aarch64 Linux handhelds)
+
+`chgame_libretro.so` (ROCKNIX and other aarch64 Linux devices) can translate the game's code to
+native code. That is faster than the interpreter and gives identical results. The core option
+`chgame_jit` has three values:
+
+- **Auto** (default): JIT on Cortex-A53 and Cortex-A55 CPUs (Allwinner H700, Rockchip RK3566),
+  interpreter on any other CPU or if the CPU can't be read.
+- **On**: always use the JIT.
+- **Off**: always use the interpreter.
+
+Checked on an H700 and an RK3566 (about 15 games). If a game closes straight back to the front end
+or shows a black screen, set the option to **Off** and open an issue naming the device. Most games
+already run at full speed with the interpreter. Windows, Android and macOS builds always use the
+interpreter. On ROCKNIX the option is saved in `config/CHGame/CHGame.opt` (`chgame_jit = "Off"`).
+Core 0.6 fixes an intermittent JIT crash on Cortex-A55 (the instruction cache was not fully flushed).
+
 ## Building
 
 On Windows with `zig` on the PATH (no make needed; `Makefile` holds the same Windows recipe):
