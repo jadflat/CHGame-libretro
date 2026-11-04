@@ -35,7 +35,7 @@ Checked on an H700 and an RK3566 (about 15 games). If a game closes straight bac
 or shows a black screen, set the option to **Off** and open an issue naming the device. Most games
 already run at full speed with the interpreter. Windows, Android and macOS builds always use the
 interpreter. On ROCKNIX the option is saved in `config/CHGame/CHGame.opt` (`chgame_jit = "Off"`).
-Core 0.6 fixes an intermittent JIT crash on Cortex-A55 (the instruction cache was not fully flushed).
+Core 0.6 widens the JIT's instruction-cache flush to address an intermittent Cortex-A55 crash; Auto uses the JIT only on A53/A55.
 
 ## Building
 
