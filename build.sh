@@ -13,7 +13,7 @@ if [ "$what" = windows ] || [ "$what" = all ]; then
     echo "build/chgame_libretro.dll"
 fi
 if [ "$what" = harness ] || [ "$what" = all ]; then
-    $ZIG cc -target x86_64-windows-gnu -O2 -Ilibretro -o build/harness.exe test/harness.c
+    $ZIG cc -target x86_64-windows-gnu -O2 -Ilibretro -Iemu/src -o build/harness.exe test/harness.c
     echo "build/harness.exe"
 fi
 if [ "$what" = android ] || [ "$what" = all ]; then
@@ -29,7 +29,7 @@ if [ "$what" = android ] || [ "$what" = all ]; then
     for s in $SRC libretro/android_shim.c; do
         o=$A/$(basename "${s%.c}").o
         $ZIG cc -target aarch64-linux-musl -std=c11 -fPIC -O3 -fvisibility=hidden -ffunction-sections -fdata-sections \
-            -fno-stack-protector -D_GNU_SOURCE -Wall -Wno-unused-parameter -Iemu/src -Ilibretro \
+            -fstack-protector-strong -D_GNU_SOURCE -Wall -Wno-unused-parameter -Iemu/src -Ilibretro \
             '-DSDCARD_LABEL="CHGAME"' -c $s -o $o
         OBJS="$OBJS $o"
     done

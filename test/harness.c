@@ -41,6 +41,18 @@ static double now_s(void)
 }
 #endif
 #include "libretro.h"
+#include <stddef.h>
+#include "machine.h"
+
+/* the state's head as libretro.c lays it out: the decoded instruction caches inside m
+   are zeroed on load (a file's copy is never trusted), so a round trip compares the rest */
+typedef struct { uint32_t magic, size; ChgMachine m; } StateHead;
+static void drop_caches(void *st, size_t n)
+{
+    const size_t at = offsetof(StateHead, m) + offsetof(ChgMachine, dc_flash);
+    const size_t len = offsetof(ChgMachine, dc_ram) + sizeof(((ChgMachine *)0)->dc_ram) - offsetof(ChgMachine, dc_flash);
+    if (at + len <= n) memset((uint8_t *)st + at, 0, len);
+}
 
 static const char *sys_dir = ".", *save_dir = ".";
 static uint32_t frame[128 * 128];
@@ -313,7 +325,10 @@ int main(int argc, char **argv)
             }
             const bool back = retro_unserialize(st, n);
             void *st2 = malloc(n);
-            const bool rt = retro_serialize(st2, n) && !memcmp(st, st2, n);   /* load then save gives the same bytes */
+            const bool got2 = retro_serialize(st2, n);
+            drop_caches(st, n);
+            drop_caches(st2, n);
+            const bool rt = got2 && !memcmp(st, st2, n);   /* load then save gives the same bytes, caches aside */
             for (int k = 0; k < 60; k++) {
                 retro_run();
                 for (int j = 0; j < 128 * 128; j++) h2 = (h2 ^ frame[j]) * 16777619u;
