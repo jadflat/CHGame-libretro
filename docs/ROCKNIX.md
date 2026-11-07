@@ -82,9 +82,11 @@ whole system list, so every other system disappears. A ROCKNIX update
 replaces `es_systems.cfg` and keeps yours as `last_es_systems.cfg`; copy
 that back to get CHGame again.
 
-SD data files: the core copies each game's `.DAT` from the game folder to
-`roms/bios/chgame/sdcard` on first load. The `.CHG` and `.DAT` must be the
-same release.
+SD data files: keep each game's `.DAT` beside its `.CHG`. Core 0.8 and later copy it to
+`chgame/sdcard` in RetroArch's save folder (never `bios`), and refresh that copy
+whenever the game folder's file changes. Older cores used `roms/bios/chgame/sdcard`
+and never refreshed it: delete that folder. The `.CHG` and `.DAT` must be the same
+release.
 
 ## 4. Box art and videos
 

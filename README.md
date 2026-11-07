@@ -13,7 +13,7 @@ screen, the buzzer, the microSD card and the real bootloader.
 | Audio | the buzzer at 48 kHz: the bare pin signal or a piezo-like filter, volume |
 | Saves | the flash pages a game writes, as `<game>.sav` in RetroArch's save folder |
 | Save states | yes |
-| SD card | the folder `<system>/chgame/sdcard/`: put `.DAT` files there |
+| SD card | put `.DAT` files beside the `.CHG`; the core stages them in `<saves>/chgame/sdcard/` |
 | Buttons | d-pad or left stick, CHGame A = the bottom face button, B = the right one, Start = Select, Select = Start (CHGame has A and Start on the left) |
 
 **Download:** `chgame_libretro_android.so`, `chgame_libretro.dll` and `chgame_libretro.info`

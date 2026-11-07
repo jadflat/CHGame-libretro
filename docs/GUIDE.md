@@ -51,14 +51,10 @@ it a folder you can write to:
    `chgame_libretro_android.so`. RetroArch copies it into its own cores folder.
 3. **Load Core** now lists **CHGame (CHGame Retro)**.
 
-### 4. The SD card folder
-Copy the `.DAT` files into:
-
-    /storage/emulated/0/RetroArch/system/chgame/sdcard/
-
-If the folder isn't there, make it (the core also makes it the first time a game starts). Every
-game shares this one folder, as games share one card on a CHGame. A file a game writes to the
-card is written back here every few seconds and when you close the game.
+### 4. Data files
+Put the `.DAT` files beside the `.CHG` files. Each time a game starts, the core copies them to
+its card folder, `/storage/emulated/0/RetroArch/saves/chgame/sdcard/`, and copies again when the
+file beside the game changes. You never need to touch that folder.
 
 ### 5. Play
 **Load Core → CHGame**, then **Load Content**, and pick a `.CHG`. Or load the `.CHG` first and
