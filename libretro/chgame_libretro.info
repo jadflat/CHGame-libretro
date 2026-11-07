@@ -6,7 +6,7 @@ corename = "CHGame"
 categories = "Emulator"
 license = "MIT"
 permissions = ""
-display_version = "0.8"
+display_version = "0.9"
 
 # Hardware Information
 manufacturer = "Kevin Bates"
