@@ -113,7 +113,7 @@ RetroArch**, or your exit hotkey).
 
 ## Linux handhelds (ROCKNIX)
 
-`chgame_libretro.so` is the aarch64 Linux build (with a JIT for speed). Installing it and
+`chgame_libretro_linux_aarch64.so` (renamed to `chgame_libretro.so`) is the aarch64 Linux build (with a JIT for speed). Installing it and
 setting up EmulationStation on a ROCKNIX handheld: [ROCKNIX.md](ROCKNIX.md).
 
 ---

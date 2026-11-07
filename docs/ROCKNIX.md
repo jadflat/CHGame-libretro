@@ -14,7 +14,8 @@ Build a Linux one:
 ./build.sh linux-arm64
 ```
 
-The result is `build/chgame_libretro.so`; the release has it ready built.
+The result is `build/chgame_libretro.so`; the release has it ready built as
+`chgame_libretro_linux_aarch64.so` (rename it to `chgame_libretro.so`).
 
 ## 1. Copy the core
 

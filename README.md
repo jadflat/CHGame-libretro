@@ -16,9 +16,19 @@ screen, the buzzer, the microSD card and the real bootloader.
 | SD card | put `.DAT` files beside the `.CHG`; the core stages them in `<saves>/chgame/sdcard/` |
 | Buttons | d-pad or left stick, CHGame A = the bottom face button, B = the right one, Start = Select, Select = Start (CHGame has A and Start on the left) |
 
-**Download:** `chgame_libretro_android.so`, `chgame_libretro.dll` and `chgame_libretro.info`
-are on the [releases page](../../releases). Installing them (RetroArch on Android and Windows,
-ES-DE, Daijisho): [docs/GUIDE.md](docs/GUIDE.md).
+**Download** from the [releases page](../../releases), with `chgame_libretro.info`:
+
+| File | For | Rename to |
+|---|---|---|
+| `chgame_libretro_android.so` | RetroArch on Android | (keep the name) |
+| `chgame_libretro.dll` | Windows | (keep the name) |
+| `chgame_libretro_linux_aarch64.so` | ROCKNIX and other aarch64 Linux handhelds | `chgame_libretro.so` |
+| `chgame_libretro_linux_x86_64.so` | Linux PCs | `chgame_libretro.so` |
+| `chgame_libretro_macos_arm64.dylib` | Macs with Apple silicon | `chgame_libretro.dylib` |
+
+Put the core in RetroArch's `cores` folder and the `.info` in its `info` folder. The Linux x86-64
+and macOS files come from GitHub's build and have not been played on yet. Installing on Android
+and Windows, ES-DE, Daijisho: [docs/GUIDE.md](docs/GUIDE.md).
 
 ## JIT recompiler (aarch64 Linux handhelds)
 
