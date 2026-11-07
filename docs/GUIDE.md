@@ -103,8 +103,7 @@ ES-DE shows your games in one menu and starts RetroArch with this core.
 
 1. Copy `frontends/es_systems.xml` to `ES-DE/custom_systems/` (if you already have an
    `es_systems.xml` there, paste its `<system>` block inside your `<systemList>` instead).
-2. Put the games in `ROMs/chgame`, and the `.DAT` files in RetroArch's
-   `system/chgame/sdcard/` folder, as above.
+2. Put the games in `ROMs/chgame`, with their `.DAT` files beside them, as above.
 3. Restart ES-DE.
 
 The command starts RetroArch with the installed core,
